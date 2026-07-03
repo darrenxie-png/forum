@@ -1,5 +1,6 @@
+
 describe('Hello World', () => {
-  it('should fail intentionally', () => {
-    expect(1).toBe(2); // sengaja gagal
+  it('should pass', () => {
+    expect(1).toBe(1); // berhasil
   });
 });
