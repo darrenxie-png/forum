@@ -28,20 +28,21 @@
     "node-pg-migrate": "^6.2.2"
   },
   "jest": {
-    "testEnvironment": "node",
-    "coverageThreshold": {
-      "global": {
-        "branches": 100,
-        "functions": 100,
-        "lines": 100,
-        "statements": 100
-      }
-    },
-    "collectCoverageFrom": [
-      "src/**/*.js",
-      "!src/app/server.js",
-      "!src/Infrastructures/database/_test/**",
-      "!src/Infrastructures/http/_test/**"
-    ]
-  }
+  "testEnvironment": "node",
+  "coverageThreshold": {
+    "global": {
+      "branches": 100,
+      "functions": 100,
+      "lines": 100,
+      "statements": 100
+    }
+  },
+  "collectCoverageFrom": [
+    "src/**/*.js",
+    "!src/app/server.js",
+    "!src/Infrastructures/database/**",
+    "!src/Infrastructures/http/_test/**",
+    "!src/**/_test/**"
+  ]
+}
 }

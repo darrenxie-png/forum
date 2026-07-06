@@ -1,8 +1,8 @@
 const createServer = require('../createServer');
 
 describe('HTTP Server', () => {
-  const makeServer = () =>
-    createServer({
+  const makeServer = async (overrides = {}) => {
+    return createServer({
       userRepository: {},
       authenticationRepository: {},
       authenticationTokenManager: {},
@@ -11,28 +11,45 @@ describe('HTTP Server', () => {
       commentRepository: {},
       replyRepository: {},
       likeRepository: {},
+      ...overrides,
     });
+  };
 
   it('should return 404 when request unknown route', async () => {
     const server = await makeServer();
-    const response = await server.inject({ method: 'GET', url: '/unknown-route' });
+    const response = await server.inject({ method: 'GET', url: '/unknown' });
     expect(response.statusCode).toBe(404);
   });
 
-  it('should handle ClientError and return correct status code', async () => {
-    const { InvariantError } = await import('../../../Commons/exceptions/InvariantError.js').catch(() => ({
-      InvariantError: require('../../../Commons/exceptions/InvariantError'),
-    }));
-
+  it('should handle ClientError and return 400', async () => {
     const server = await makeServer();
-
-    // POST /users with invalid payload triggers InvariantError via use case
     const response = await server.inject({
       method: 'POST',
       url: '/users',
-      payload: {},
+      payload: { username: 'darren' },
     });
+    expect(response.statusCode).toBe(400);
+    const payload = JSON.parse(response.payload);
+    expect(payload.status).toBe('fail');
+  });
 
-    expect([400, 500]).toContain(response.statusCode);
+  it('should handle server error and return 500', async () => {
+    const errorUserRepository = {
+      verifyAvailableUsername: jest.fn().mockRejectedValue(new Error('unexpected server error')),
+      addUser: jest.fn(),
+    };
+    const errorPasswordHash = { hash: jest.fn() };
+    const server = await makeServer({
+      userRepository: errorUserRepository,
+      passwordHash: errorPasswordHash,
+    });
+    const response = await server.inject({
+      method: 'POST',
+      url: '/users',
+      payload: { username: 'darren', password: 'secret', fullname: 'Darren Dev' },
+    });
+    expect(response.statusCode).toBe(500);
+    const payload = JSON.parse(response.payload);
+    expect(payload.status).toBe('error');
   });
 });

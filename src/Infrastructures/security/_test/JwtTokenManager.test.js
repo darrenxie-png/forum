@@ -8,6 +8,12 @@ describe('JwtTokenManager', () => {
     process.env.REFRESH_TOKEN_KEY = 'refresh_token_key_secret_for_testing_purposes';
   });
 
+  it('should use default Jwt when no argument provided', () => {
+  process.env.ACCESS_TOKEN_KEY = 'access_token_key_secret_for_testing_purposes_min32';
+  const jwtTokenManager = new JwtTokenManager();
+  expect(jwtTokenManager).toBeDefined();
+});
+
   it('should create access token correctly', async () => {
     const jwtTokenManager = new JwtTokenManager(Jwt.token);
     const accessToken = await jwtTokenManager.createAccessToken({ username: 'darren', id: 'user-1' });
