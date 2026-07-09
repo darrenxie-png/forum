@@ -11,6 +11,33 @@ const likesPlugin = require('../../Interfaces/http/api/likes');
 
 const ClientError = require('../../Commons/exceptions/ClientError');
 
+const rateLimitStore = new Map();
+
+const isRateLimited = (ip) => {
+  const now = Date.now();
+  const windowMs = 60 * 1000;
+  const maxRequests = 90;
+
+  if (!rateLimitStore.has(ip)) {
+    rateLimitStore.set(ip, { count: 1, startTime: now });
+    return false;
+  }
+
+  const data = rateLimitStore.get(ip);
+
+  if (now - data.startTime > windowMs) {
+    rateLimitStore.set(ip, { count: 1, startTime: now });
+    return false;
+  }
+
+  if (data.count >= maxRequests) {
+    return true;
+  }
+
+  data.count += 1;
+  return false;
+};
+
 const createServer = async ({
   userRepository,
   authenticationRepository,
@@ -38,6 +65,17 @@ const createServer = async ({
     }),
   });
 
+  server.ext('onRequest', (request, h) => {
+    const { path } = request;
+    if (path.startsWith('/threads')) {
+      const ip = request.info.remoteAddress;
+      if (isRateLimited(ip)) {
+        return h.response({ status: 'fail', message: 'Too Many Requests' }).code(429).takeover();
+      }
+    }
+    return h.continue;
+  });
+
   await server.register([
     { plugin: usersPlugin, options: { userRepository, passwordHash } },
     { plugin: authenticationsPlugin, options: { userRepository, authenticationRepository, authenticationTokenManager, passwordHash } },
@@ -62,5 +100,8 @@ const createServer = async ({
 
   return server;
 };
+
+createServer.rateLimitStore = rateLimitStore;
+createServer.isRateLimited = isRateLimited;
 
 module.exports = createServer;
