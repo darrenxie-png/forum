@@ -16,8 +16,4 @@ jobs:
 
       - name: Trigger Railway Deployment
         run: |
-<<<<<<< HEAD
           curl -X POST "${{ secrets.RAILWAY_DEPLOY_WEBHOOK }}"
-=======
-          curl -X POST "${{ secrets.RAILWAY_DEPLOY_WEBHOOK }}"
->>>>>>> origin/main
