@@ -6,8 +6,8 @@ class RefreshAuthenticationUseCase {
 
   async execute(useCasePayload) {
     const { refreshToken } = useCasePayload;
-    await this._authenticationRepository.verifyRefreshToken(refreshToken);
     const { username, id } = await this._authenticationTokenManager.verifyRefreshToken(refreshToken);
+    await this._authenticationRepository.verifyRefreshToken(refreshToken);
     const accessToken = await this._authenticationTokenManager.createAccessToken({ username, id });
     return accessToken;
   }

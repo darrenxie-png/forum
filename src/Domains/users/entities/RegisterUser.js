@@ -8,20 +8,20 @@ class RegisterUser {
     this.fullname = fullname;
   }
 
-  _verifyPayload({ username, password, fullname }) {
+ _verifyPayload({ username, password, fullname }) {
     if (!username || !password || !fullname) {
-      throw new InvariantError('Tidak dapat membuat user baru karena properti yang dibutuhkan tidak ada');
+      throw new InvariantError('tidak dapat membuat user baru karena properti yang dibutuhkan tidak ada');
     }
     if (typeof username !== 'string' || typeof password !== 'string' || typeof fullname !== 'string') {
-      throw new InvariantError('Tidak dapat membuat user baru karena tipe data tidak sesuai');
+      throw new InvariantError('tidak dapat membuat user baru karena tipe data tidak sesuai');
     }
     if (username.length > 50) {
-      throw new InvariantError('Tidak dapat membuat user baru karena karakter username melebihi batas limit');
+      throw new InvariantError('tidak dapat membuat user baru karena karakter username melebihi batas limit');
     }
     if (!/^[\w]+$/.test(username)) {
-      throw new InvariantError('Tidak dapat membuat user baru karena username mengandung karakter terlarang');
+      throw new InvariantError('tidak dapat membuat user baru karena username mengandung karakter terlarang');
     }
-  }
+}
 }
 
 module.exports = RegisterUser;

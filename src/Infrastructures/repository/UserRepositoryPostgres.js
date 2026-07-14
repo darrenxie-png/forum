@@ -14,7 +14,7 @@ async verifyAvailableUsername(username) {
   const query = { text: 'SELECT username FROM users WHERE username = $1', values: [username] };
   const result = await this._pool.query(query);
   if (result.rowCount) {
-    throw new InvariantError('tidak dapat membuat user baru karena username tidak tersedia');
+    throw new InvariantError('username tidak tersedia');
   }
 }
 

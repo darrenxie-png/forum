@@ -22,9 +22,9 @@ class JwtTokenManager {
       const { payload } = artifacts.decoded;
       return payload;
     } catch {
-      throw new InvariantError('Refresh token tidak valid');
+      throw new InvariantError('refresh token tidak valid');
     }
-  }
+}
 
   async decodePayload(token) {
     const artifacts = this._jwt.decode(token);
