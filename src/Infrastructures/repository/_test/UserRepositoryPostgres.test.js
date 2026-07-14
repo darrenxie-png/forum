@@ -1,6 +1,7 @@
 const UserRepositoryPostgres = require('../UserRepositoryPostgres');
 const InvariantError = require('../../../Commons/exceptions/InvariantError');
 const NotFoundError = require('../../../Commons/exceptions/NotFoundError');
+const AuthenticationError = require('../../../Commons/exceptions/AuthenticationError');
 
 describe('UserRepositoryPostgres', () => {
   const mockIdGenerator = () => '123';
@@ -34,10 +35,10 @@ describe('UserRepositoryPostgres', () => {
   });
 
   describe('getPasswordByUsername', () => {
-    it('should throw NotFoundError when user not found', async () => {
+    it('should throw AuthenticationError when user not found', async () => {
       const mockPool = { query: jest.fn().mockResolvedValue({ rowCount: 0, rows: [] }) };
       const repo = new UserRepositoryPostgres(mockPool, mockIdGenerator);
-      await expect(repo.getPasswordByUsername('unknown')).rejects.toThrow(NotFoundError);
+      await expect(repo.getPasswordByUsername('unknown')).rejects.toThrow(AuthenticationError);
     });
 
     it('should return password when user found', async () => {

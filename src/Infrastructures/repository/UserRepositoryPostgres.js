@@ -1,6 +1,7 @@
 const InvariantError = require('../../Commons/exceptions/InvariantError');
 const NotFoundError = require('../../Commons/exceptions/NotFoundError');
 const UserRepository = require('../../Domains/users/UserRepository');
+const AuthenticationError = require('../../Commons/exceptions/AuthenticationError');
 
 class UserRepositoryPostgres extends UserRepository {
   constructor(pool, idGenerator) {
@@ -9,13 +10,13 @@ class UserRepositoryPostgres extends UserRepository {
     this._idGenerator = idGenerator;
   }
 
-  async verifyAvailableUsername(username) {
-    const query = { text: 'SELECT username FROM users WHERE username = $1', values: [username] };
-    const result = await this._pool.query(query);
-    if (result.rowCount) {
-      throw new InvariantError('Username sudah digunakan');
-    }
+async verifyAvailableUsername(username) {
+  const query = { text: 'SELECT username FROM users WHERE username = $1', values: [username] };
+  const result = await this._pool.query(query);
+  if (result.rowCount) {
+    throw new InvariantError('tidak dapat membuat user baru karena username tidak tersedia');
   }
+}
 
   async addUser({ username, password, fullname }) {
     const id = `user-${this._idGenerator()}`;
@@ -27,12 +28,14 @@ class UserRepositoryPostgres extends UserRepository {
     return result.rows[0];
   }
 
-  async getPasswordByUsername(username) {
-    const query = { text: 'SELECT password FROM users WHERE username = $1', values: [username] };
-    const result = await this._pool.query(query);
-    if (!result.rowCount) throw new NotFoundError('User tidak ditemukan');
-    return result.rows[0].password;
+ async getPasswordByUsername(username) {
+  const query = { text: 'SELECT password FROM users WHERE username = $1', values: [username] };
+  const result = await this._pool.query(query);
+  if (!result.rowCount) {
+    throw new AuthenticationError('kredensial yang Anda berikan salah');
   }
+  return result.rows[0].password;
+}
 
   async getIdByUsername(username) {
     const query = { text: 'SELECT id FROM users WHERE username = $1', values: [username] };
