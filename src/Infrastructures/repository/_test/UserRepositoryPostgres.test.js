@@ -35,10 +35,10 @@ describe('UserRepositoryPostgres', () => {
   });
 
   describe('getPasswordByUsername', () => {
-    it('should throw AuthenticationError when user not found', async () => {
+    it('should throw InvariantError when user not found', async () => {
       const mockPool = { query: jest.fn().mockResolvedValue({ rowCount: 0, rows: [] }) };
       const repo = new UserRepositoryPostgres(mockPool, mockIdGenerator);
-      await expect(repo.getPasswordByUsername('unknown')).rejects.toThrow(AuthenticationError);
+      await expect(repo.getPasswordByUsername('unknown')).rejects.toThrow(InvariantError);
     });
 
     it('should return password when user found', async () => {

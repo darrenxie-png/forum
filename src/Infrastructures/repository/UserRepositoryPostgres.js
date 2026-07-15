@@ -1,7 +1,7 @@
 const InvariantError = require('../../Commons/exceptions/InvariantError');
 const NotFoundError = require('../../Commons/exceptions/NotFoundError');
 const UserRepository = require('../../Domains/users/UserRepository');
-const AuthenticationError = require('../../Commons/exceptions/AuthenticationError');
+
 
 class UserRepositoryPostgres extends UserRepository {
   constructor(pool, idGenerator) {
@@ -28,11 +28,11 @@ async verifyAvailableUsername(username) {
     return result.rows[0];
   }
 
- async getPasswordByUsername(username) {
+async getPasswordByUsername(username) {
   const query = { text: 'SELECT password FROM users WHERE username = $1', values: [username] };
   const result = await this._pool.query(query);
   if (!result.rowCount) {
-    throw new AuthenticationError('kredensial yang Anda berikan salah');
+    throw new InvariantError('kredensial yang Anda berikan salah');
   }
   return result.rows[0].password;
 }
