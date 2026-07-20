@@ -2,7 +2,7 @@
   "name": "forum-api",
   "version": "1.0.0",
   "description": "Forum API - Dicoding Back-End Expert",
-  "main": "src/app/createServer.js",
+  "main": "src/app/server.js",
   "scripts": {
     "start": "node src/app/server.js",
     "dev": "nodemon src/app/server.js",
@@ -14,18 +14,20 @@
     "migrate:create": "node-pg-migrate -m migrations create"
   },
   "dependencies": {
-    "@hapi/hapi": "^21.3.2",
-    "@hapi/jwt": "^3.0.0",
     "bcrypt": "^5.1.1",
+    "cors": "^2.8.5",
     "dotenv": "^16.3.1",
+    "express": "^4.19.2",
     "joi": "^17.11.0",
+    "jsonwebtoken": "^9.0.2",
     "nanoid": "^3.3.7",
     "pg": "^8.11.3"
   },
   "devDependencies": {
     "jest": "^29.7.0",
+    "nodemon": "^3.0.2",
     "node-pg-migrate": "^6.2.2",
-    "nodemon": "^3.0.2"
+    "supertest": "^7.0.0"
   },
   "jest": {
     "testEnvironment": "node",
@@ -41,7 +43,6 @@
       "src/**/*.js",
       "!src/app/server.js",
       "!src/Infrastructures/database/**",
-      "!src/Infrastructures/http/_test/**",
       "!src/**/_test/**"
     ]
   }

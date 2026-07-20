@@ -8,7 +8,7 @@ class RegisterUser {
     this.fullname = fullname;
   }
 
- _verifyPayload({ username, password, fullname }) {
+  _verifyPayload({ username, password, fullname }) {
     if (!username || !password || !fullname) {
       throw new InvariantError('tidak dapat membuat user baru karena properti yang dibutuhkan tidak ada');
     }
@@ -21,7 +21,7 @@ class RegisterUser {
     if (!/^[\w]+$/.test(username)) {
       throw new InvariantError('tidak dapat membuat user baru karena username mengandung karakter terlarang');
     }
-}
+  }
 }
 
 module.exports = RegisterUser;

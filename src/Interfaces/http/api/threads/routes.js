@@ -1,17 +1,14 @@
+const express = require('express');
 const ThreadsHandler = require('./handler');
 
-const threadsRoutes = (handler) => [
-  {
-    method: 'POST',
-    path: '/threads',
-    handler: handler.postThreadHandler,
-    options: { auth: 'forum_jwt' },
-  },
-  {
-    method: 'GET',
-    path: '/threads/{threadId}',
-    handler: handler.getThreadByIdHandler,
-  },
-];
+const createThreadsRouter = ({ threadRepository, commentRepository, replyRepository, likeRepository, authMiddleware }) => {
+  const router = express.Router();
+  const handler = new ThreadsHandler({ threadRepository, commentRepository, replyRepository, likeRepository });
 
-module.exports = threadsRoutes;
+  router.post('/threads', authMiddleware, handler.postThreadHandler);
+  router.get('/threads/:threadId', handler.getThreadByIdHandler);
+
+  return router;
+};
+
+module.exports = createThreadsRouter;

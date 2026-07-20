@@ -1,4 +1,6 @@
 require('dotenv').config();
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 const { nanoid } = require('nanoid');
 
 const pool = require('../Infrastructures/database/postgres/pool');
@@ -11,7 +13,6 @@ const CommentRepositoryPostgres = require('../Infrastructures/repository/Comment
 const ReplyRepositoryPostgres = require('../Infrastructures/repository/ReplyRepositoryPostgres');
 const LikeRepositoryPostgres = require('../Infrastructures/repository/LikeRepositoryPostgres');
 
-const bcrypt = require('bcrypt');
 const BcryptPasswordHash = require('../Infrastructures/security/BcryptPasswordHash');
 const JwtTokenManager = require('../Infrastructures/security/JwtTokenManager');
 
@@ -23,22 +24,22 @@ const replyRepository = new ReplyRepositoryPostgres(pool, nanoid);
 const likeRepository = new LikeRepositoryPostgres(pool, nanoid);
 
 const passwordHash = new BcryptPasswordHash(bcrypt);
-const authenticationTokenManager = new JwtTokenManager();
+const authenticationTokenManager = new JwtTokenManager(jwt);
 
-const init = async () => {
-  const server = await createServer({
-    userRepository,
-    authenticationRepository,
-    authenticationTokenManager,
-    passwordHash,
-    threadRepository,
-    commentRepository,
-    replyRepository,
-    likeRepository,
-  });
+const app = createServer({
+  userRepository,
+  authenticationRepository,
+  authenticationTokenManager,
+  passwordHash,
+  threadRepository,
+  commentRepository,
+  replyRepository,
+  likeRepository,
+});
 
-  await server.start();
-  console.log(`Server running at ${server.info.uri}`);
-};
+const PORT = process.env.PORT || 5000;
+const HOST = process.env.HOST || '0.0.0.0';
 
-init();
+app.listen(PORT, HOST, () => {
+  console.log(`Server running at http://${HOST}:${PORT}`);
+});

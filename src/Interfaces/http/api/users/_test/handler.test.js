@@ -1,3 +1,4 @@
+const request = require('supertest');
 const createServer = require('../../../../../Infrastructures/http/createServer');
 
 describe('Users API', () => {
@@ -7,12 +8,9 @@ describe('Users API', () => {
     getPasswordByUsername: jest.fn(),
     getIdByUsername: jest.fn(),
   };
-  const mockPasswordHash = {
-    hash: jest.fn(),
-    comparePassword: jest.fn(),
-  };
+  const mockPasswordHash = { hash: jest.fn(), comparePassword: jest.fn() };
 
-  const makeServer = () =>
+  const makeApp = () =>
     createServer({
       userRepository: mockUserRepository,
       authenticationRepository: {},
@@ -30,33 +28,20 @@ describe('Users API', () => {
     it('should return 201 and added user', async () => {
       mockUserRepository.verifyAvailableUsername.mockResolvedValue(undefined);
       mockPasswordHash.hash.mockResolvedValue('hashed_password');
-      mockUserRepository.addUser.mockResolvedValue({
-        id: 'user-123',
-        username: 'darren',
-        fullname: 'Darren Dev',
-      });
+      mockUserRepository.addUser.mockResolvedValue({ id: 'user-123', username: 'darren', fullname: 'Darren Dev' });
 
-      const server = await makeServer();
-      const response = await server.inject({
-        method: 'POST',
-        url: '/users',
-        payload: { username: 'darren', password: 'secret', fullname: 'Darren Dev' },
-      });
+      const res = await request(makeApp())
+        .post('/users')
+        .send({ username: 'darren', password: 'secret', fullname: 'Darren Dev' });
 
-      expect(response.statusCode).toBe(201);
-      const payload = JSON.parse(response.payload);
-      expect(payload.status).toBe('success');
-      expect(payload.data.addedUser.id).toBe('user-123');
+      expect(res.statusCode).toBe(201);
+      expect(res.body.status).toBe('success');
+      expect(res.body.data.addedUser.id).toBe('user-123');
     });
 
     it('should return 400 when payload is missing', async () => {
-      const server = await makeServer();
-      const response = await server.inject({
-        method: 'POST',
-        url: '/users',
-        payload: { username: 'darren' },
-      });
-      expect(response.statusCode).toBe(400);
+      const res = await request(makeApp()).post('/users').send({ username: 'darren' });
+      expect(res.statusCode).toBe(400);
     });
   });
 });

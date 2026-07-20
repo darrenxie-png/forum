@@ -1,11 +1,13 @@
+const express = require('express');
 const UsersHandler = require('./handler');
 
-const usersRoutes = (handler) => [
-  {
-    method: 'POST',
-    path: '/users',
-    handler: handler.postUserHandler,
-  },
-];
+const createUsersRouter = ({ userRepository, passwordHash }) => {
+  const router = express.Router();
+  const handler = new UsersHandler({ userRepository, passwordHash });
 
-module.exports = usersRoutes;
+  router.post('/users', handler.postUserHandler);
+
+  return router;
+};
+
+module.exports = createUsersRouter;

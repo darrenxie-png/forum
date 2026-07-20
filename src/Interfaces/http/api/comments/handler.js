@@ -10,26 +10,34 @@ class CommentsHandler {
     this.deleteCommentHandler = this.deleteCommentHandler.bind(this);
   }
 
-  async postCommentHandler(request, h) {
-    const { id: owner } = request.auth.credentials;
-    const { threadId } = request.params;
-    const useCase = new AddCommentUseCase({
-      commentRepository: this._commentRepository,
-      threadRepository: this._threadRepository,
-    });
-    const addedComment = await useCase.execute({ ...request.payload, threadId, owner });
-    return h.response({ status: 'success', data: { addedComment } }).code(201);
+  async postCommentHandler(req, res, next) {
+    try {
+      const { id: owner } = req.auth.credentials;
+      const { threadId } = req.params;
+      const useCase = new AddCommentUseCase({
+        commentRepository: this._commentRepository,
+        threadRepository: this._threadRepository,
+      });
+      const addedComment = await useCase.execute({ ...req.body, threadId, owner });
+      return res.status(201).json({ status: 'success', data: { addedComment } });
+    } catch (error) {
+      return next(error);
+    }
   }
 
-  async deleteCommentHandler(request, h) {
-    const { id: owner } = request.auth.credentials;
-    const { threadId, commentId } = request.params;
-    const useCase = new DeleteCommentUseCase({
-      commentRepository: this._commentRepository,
-      threadRepository: this._threadRepository,
-    });
-    await useCase.execute({ threadId, commentId, owner });
-    return h.response({ status: 'success' }).code(200);
+  async deleteCommentHandler(req, res, next) {
+    try {
+      const { id: owner } = req.auth.credentials;
+      const { threadId, commentId } = req.params;
+      const useCase = new DeleteCommentUseCase({
+        commentRepository: this._commentRepository,
+        threadRepository: this._threadRepository,
+      });
+      await useCase.execute({ threadId, commentId, owner });
+      return res.status(200).json({ status: 'success' });
+    } catch (error) {
+      return next(error);
+    }
   }
 }
 

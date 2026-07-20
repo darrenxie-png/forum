@@ -1,34 +1,30 @@
-const Jwt = require('@hapi/jwt');
 const InvariantError = require('../../Commons/exceptions/InvariantError');
-const AuthenticationError = require('../../Commons/exceptions/AuthenticationError');
 
 class JwtTokenManager {
-  constructor(jwt = Jwt.token) {
+  constructor(jwt) {
     this._jwt = jwt;
   }
 
   async createAccessToken(payload) {
-    return this._jwt.generate(payload, process.env.ACCESS_TOKEN_KEY);
+    return this._jwt.sign(payload, process.env.ACCESS_TOKEN_KEY);
   }
 
   async createRefreshToken(payload) {
-    return this._jwt.generate(payload, process.env.REFRESH_TOKEN_KEY);
+    return this._jwt.sign(payload, process.env.REFRESH_TOKEN_KEY);
   }
 
   async verifyRefreshToken(token) {
     try {
-      const artifacts = this._jwt.decode(token);
-      this._jwt.verify(artifacts, process.env.REFRESH_TOKEN_KEY);
-      const { payload } = artifacts.decoded;
+      const payload = this._jwt.verify(token, process.env.REFRESH_TOKEN_KEY);
       return payload;
     } catch {
       throw new InvariantError('refresh token tidak valid');
     }
-}
+  }
 
   async decodePayload(token) {
-    const artifacts = this._jwt.decode(token);
-    return artifacts.decoded.payload;
+    const payload = this._jwt.decode(token);
+    return payload;
   }
 }
 

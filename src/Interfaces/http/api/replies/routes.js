@@ -1,18 +1,14 @@
+const express = require('express');
 const RepliesHandler = require('./handler');
 
-const repliesRoutes = (handler) => [
-  {
-    method: 'POST',
-    path: '/threads/{threadId}/comments/{commentId}/replies',
-    handler: handler.postReplyHandler,
-    options: { auth: 'forum_jwt' },
-  },
-  {
-    method: 'DELETE',
-    path: '/threads/{threadId}/comments/{commentId}/replies/{replyId}',
-    handler: handler.deleteReplyHandler,
-    options: { auth: 'forum_jwt' },
-  },
-];
+const createRepliesRouter = ({ replyRepository, commentRepository, threadRepository, authMiddleware }) => {
+  const router = express.Router();
+  const handler = new RepliesHandler({ replyRepository, commentRepository, threadRepository });
 
-module.exports = repliesRoutes;
+  router.post('/threads/:threadId/comments/:commentId/replies', authMiddleware, handler.postReplyHandler);
+  router.delete('/threads/:threadId/comments/:commentId/replies/:replyId', authMiddleware, handler.deleteReplyHandler);
+
+  return router;
+};
+
+module.exports = createRepliesRouter;

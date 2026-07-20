@@ -10,10 +10,10 @@ class CreateComment {
 
   _verifyPayload({ content, threadId, owner }) {
     if (!content || !threadId || !owner) {
-      throw new InvariantError('Tidak dapat membuat comment baru karena properti yang dibutuhkan tidak ada');
+      throw new InvariantError('tidak dapat membuat comment baru karena properti yang dibutuhkan tidak ada');
     }
     if (typeof content !== 'string' || typeof threadId !== 'string' || typeof owner !== 'string') {
-      throw new InvariantError('Tidak dapat membuat comment baru karena tipe data tidak sesuai');
+      throw new InvariantError('tidak dapat membuat comment baru karena tipe data tidak sesuai');
     }
   }
 }

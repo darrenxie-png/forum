@@ -6,7 +6,6 @@ describe('LogoutUserUseCase', () => {
       verifyRefreshToken: jest.fn().mockRejectedValue(new Error('Refresh token tidak ditemukan')),
       deleteToken: jest.fn(),
     };
-
     const useCase = new LogoutUserUseCase({ authenticationRepository: mockAuthenticationRepository });
     await expect(useCase.execute({ refreshToken: 'invalid_token' })).rejects.toThrow();
   });
@@ -16,10 +15,8 @@ describe('LogoutUserUseCase', () => {
       verifyRefreshToken: jest.fn().mockResolvedValue(undefined),
       deleteToken: jest.fn().mockResolvedValue(undefined),
     };
-
     const useCase = new LogoutUserUseCase({ authenticationRepository: mockAuthenticationRepository });
     await useCase.execute({ refreshToken: 'valid_token' });
-
     expect(mockAuthenticationRepository.deleteToken).toHaveBeenCalledWith('valid_token');
   });
 });

@@ -1,6 +1,5 @@
-
 describe('Hello World', () => {
   it('should pass', () => {
-    expect(1).toBe(1); // berhasil
+    expect(1).toBe(1);
   });
 });

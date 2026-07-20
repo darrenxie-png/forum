@@ -1,18 +1,14 @@
+const express = require('express');
 const CommentsHandler = require('./handler');
 
-const commentsRoutes = (handler) => [
-  {
-    method: 'POST',
-    path: '/threads/{threadId}/comments',
-    handler: handler.postCommentHandler,
-    options: { auth: 'forum_jwt' },
-  },
-  {
-    method: 'DELETE',
-    path: '/threads/{threadId}/comments/{commentId}',
-    handler: handler.deleteCommentHandler,
-    options: { auth: 'forum_jwt' },
-  },
-];
+const createCommentsRouter = ({ commentRepository, threadRepository, authMiddleware }) => {
+  const router = express.Router();
+  const handler = new CommentsHandler({ commentRepository, threadRepository });
 
-module.exports = commentsRoutes;
+  router.post('/threads/:threadId/comments', authMiddleware, handler.postCommentHandler);
+  router.delete('/threads/:threadId/comments/:commentId', authMiddleware, handler.deleteCommentHandler);
+
+  return router;
+};
+
+module.exports = createCommentsRouter;

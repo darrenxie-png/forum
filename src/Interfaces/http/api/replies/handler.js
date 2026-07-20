@@ -11,28 +11,36 @@ class RepliesHandler {
     this.deleteReplyHandler = this.deleteReplyHandler.bind(this);
   }
 
-  async postReplyHandler(request, h) {
-    const { id: owner } = request.auth.credentials;
-    const { threadId, commentId } = request.params;
-    const useCase = new AddReplyUseCase({
-      replyRepository: this._replyRepository,
-      commentRepository: this._commentRepository,
-      threadRepository: this._threadRepository,
-    });
-    const addedReply = await useCase.execute({ ...request.payload, commentId, threadId, owner });
-    return h.response({ status: 'success', data: { addedReply } }).code(201);
+  async postReplyHandler(req, res, next) {
+    try {
+      const { id: owner } = req.auth.credentials;
+      const { threadId, commentId } = req.params;
+      const useCase = new AddReplyUseCase({
+        replyRepository: this._replyRepository,
+        commentRepository: this._commentRepository,
+        threadRepository: this._threadRepository,
+      });
+      const addedReply = await useCase.execute({ ...req.body, commentId, threadId, owner });
+      return res.status(201).json({ status: 'success', data: { addedReply } });
+    } catch (error) {
+      return next(error);
+    }
   }
 
-  async deleteReplyHandler(request, h) {
-    const { id: owner } = request.auth.credentials;
-    const { threadId, commentId, replyId } = request.params;
-    const useCase = new DeleteReplyUseCase({
-      replyRepository: this._replyRepository,
-      commentRepository: this._commentRepository,
-      threadRepository: this._threadRepository,
-    });
-    await useCase.execute({ threadId, commentId, replyId, owner });
-    return h.response({ status: 'success' }).code(200);
+  async deleteReplyHandler(req, res, next) {
+    try {
+      const { id: owner } = req.auth.credentials;
+      const { threadId, commentId, replyId } = req.params;
+      const useCase = new DeleteReplyUseCase({
+        replyRepository: this._replyRepository,
+        commentRepository: this._commentRepository,
+        threadRepository: this._threadRepository,
+      });
+      await useCase.execute({ threadId, commentId, replyId, owner });
+      return res.status(200).json({ status: 'success' });
+    } catch (error) {
+      return next(error);
+    }
   }
 }
 

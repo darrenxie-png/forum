@@ -44,13 +44,13 @@ class ReplyRepositoryPostgres extends ReplyRepository {
   async verifyReplyExists(replyId) {
     const query = { text: 'SELECT id FROM replies WHERE id = $1', values: [replyId] };
     const result = await this._pool.query(query);
-    if (!result.rowCount) throw new NotFoundError('Reply tidak ditemukan');
+    if (!result.rowCount) throw new NotFoundError('reply tidak ditemukan');
   }
 
   async verifyReplyOwner(replyId, owner) {
     const query = { text: 'SELECT owner FROM replies WHERE id = $1', values: [replyId] };
     const result = await this._pool.query(query);
-    if (!result.rowCount) throw new NotFoundError('Reply tidak ditemukan');
+    if (!result.rowCount) throw new NotFoundError('reply tidak ditemukan');
     if (result.rows[0].owner !== owner) throw new AuthorizationError('Anda tidak berhak mengakses resource ini');
   }
 }

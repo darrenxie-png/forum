@@ -12,23 +12,31 @@ class ThreadsHandler {
     this.getThreadByIdHandler = this.getThreadByIdHandler.bind(this);
   }
 
-  async postThreadHandler(request, h) {
-    const { id: owner } = request.auth.credentials;
-    const useCase = new AddThreadUseCase({ threadRepository: this._threadRepository });
-    const addedThread = await useCase.execute({ ...request.payload, owner });
-    return h.response({ status: 'success', data: { addedThread } }).code(201);
+  async postThreadHandler(req, res, next) {
+    try {
+      const { id: owner } = req.auth.credentials;
+      const useCase = new AddThreadUseCase({ threadRepository: this._threadRepository });
+      const addedThread = await useCase.execute({ ...req.body, owner });
+      return res.status(201).json({ status: 'success', data: { addedThread } });
+    } catch (error) {
+      return next(error);
+    }
   }
 
-  async getThreadByIdHandler(request, h) {
-    const { threadId } = request.params;
-    const useCase = new GetThreadDetailUseCase({
-      threadRepository: this._threadRepository,
-      commentRepository: this._commentRepository,
-      replyRepository: this._replyRepository,
-      likeRepository: this._likeRepository,
-    });
-    const thread = await useCase.execute(threadId);
-    return h.response({ status: 'success', data: { thread } }).code(200);
+  async getThreadByIdHandler(req, res, next) {
+    try {
+      const { threadId } = req.params;
+      const useCase = new GetThreadDetailUseCase({
+        threadRepository: this._threadRepository,
+        commentRepository: this._commentRepository,
+        replyRepository: this._replyRepository,
+        likeRepository: this._likeRepository,
+      });
+      const thread = await useCase.execute(threadId);
+      return res.status(200).json({ status: 'success', data: { thread } });
+    } catch (error) {
+      return next(error);
+    }
   }
 }
 

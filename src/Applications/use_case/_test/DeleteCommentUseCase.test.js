@@ -5,7 +5,6 @@ describe('DeleteCommentUseCase', () => {
   it('should throw error when thread does not exist', async () => {
     const mockThreadRepository = { verifyThreadExists: jest.fn().mockRejectedValue(new Error('Thread tidak ditemukan')) };
     const mockCommentRepository = { verifyCommentExists: jest.fn(), verifyCommentOwner: jest.fn(), deleteComment: jest.fn() };
-
     const useCase = new DeleteCommentUseCase({ commentRepository: mockCommentRepository, threadRepository: mockThreadRepository });
     await expect(useCase.execute({ threadId: 'thread-x', commentId: 'c-1', owner: 'u-1' })).rejects.toThrow();
   });
@@ -17,7 +16,6 @@ describe('DeleteCommentUseCase', () => {
       verifyCommentOwner: jest.fn().mockRejectedValue(new AuthorizationError('Anda tidak berhak')),
       deleteComment: jest.fn(),
     };
-
     const useCase = new DeleteCommentUseCase({ commentRepository: mockCommentRepository, threadRepository: mockThreadRepository });
     await expect(useCase.execute({ threadId: 'thread-1', commentId: 'c-1', owner: 'other-user' })).rejects.toThrow(AuthorizationError);
   });
@@ -29,10 +27,8 @@ describe('DeleteCommentUseCase', () => {
       verifyCommentOwner: jest.fn().mockResolvedValue(undefined),
       deleteComment: jest.fn().mockResolvedValue(undefined),
     };
-
     const useCase = new DeleteCommentUseCase({ commentRepository: mockCommentRepository, threadRepository: mockThreadRepository });
     await useCase.execute({ threadId: 'thread-1', commentId: 'c-1', owner: 'user-1' });
-
     expect(mockCommentRepository.deleteComment).toHaveBeenCalledWith('c-1');
   });
 });

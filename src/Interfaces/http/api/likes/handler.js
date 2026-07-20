@@ -9,16 +9,20 @@ class LikesHandler {
     this.putLikeHandler = this.putLikeHandler.bind(this);
   }
 
-  async putLikeHandler(request, h) {
-    const { id: userId } = request.auth.credentials;
-    const { threadId, commentId } = request.params;
-    const useCase = new ToggleLikeCommentUseCase({
-      likeRepository: this._likeRepository,
-      commentRepository: this._commentRepository,
-      threadRepository: this._threadRepository,
-    });
-    await useCase.execute({ threadId, commentId, userId });
-    return h.response({ status: 'success' }).code(200);
+  async putLikeHandler(req, res, next) {
+    try {
+      const { id: userId } = req.auth.credentials;
+      const { threadId, commentId } = req.params;
+      const useCase = new ToggleLikeCommentUseCase({
+        likeRepository: this._likeRepository,
+        commentRepository: this._commentRepository,
+        threadRepository: this._threadRepository,
+      });
+      await useCase.execute({ threadId, commentId, userId });
+      return res.status(200).json({ status: 'success' });
+    } catch (error) {
+      return next(error);
+    }
   }
 }
 

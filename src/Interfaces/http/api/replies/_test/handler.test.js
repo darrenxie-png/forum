@@ -1,80 +1,89 @@
+const request = require('supertest');
+const jwt = require('jsonwebtoken');
 const createServer = require('../../../../../Infrastructures/http/createServer');
-const Jwt = require('@hapi/jwt');
+const AuthorizationError = require('../../../../../Commons/exceptions/AuthorizationError');
+
+process.env.ACCESS_TOKEN_KEY = 'access_token_key_secret_for_testing_min32chars';
+
+const getAccessToken = () => jwt.sign({ id: 'user-123', username: 'darren' }, process.env.ACCESS_TOKEN_KEY);
 
 describe('Replies API', () => {
-  process.env.ACCESS_TOKEN_KEY = 'access_token_key_secret_for_testing_purposes_min32';
-  process.env.REFRESH_TOKEN_KEY = 'refresh_token_key_secret_for_testing_purposes_min32';
-
-  const mockThreadRepository = { verifyThreadExists: jest.fn(), addThread: jest.fn(), getThreadById: jest.fn() };
-  const mockCommentRepository = { verifyCommentExists: jest.fn(), getCommentsByThreadId: jest.fn(), addComment: jest.fn(), deleteComment: jest.fn(), verifyCommentOwner: jest.fn() };
-  const mockReplyRepository = {
-    addReply: jest.fn(),
-    deleteReply: jest.fn(),
-    verifyReplyExists: jest.fn(),
-    verifyReplyOwner: jest.fn(),
-    getRepliesByCommentId: jest.fn(),
-  };
-
-  const makeServer = () =>
-    createServer({
+  const makeApp = (threadOverrides = {}, commentOverrides = {}, replyOverrides = {}) => {
+    return createServer({
       userRepository: {},
       authenticationRepository: {},
       authenticationTokenManager: {},
       passwordHash: {},
-      threadRepository: mockThreadRepository,
-      commentRepository: mockCommentRepository,
-      replyRepository: mockReplyRepository,
+      threadRepository: { verifyThreadExists: jest.fn(), addThread: jest.fn(), getThreadById: jest.fn(), ...threadOverrides },
+      commentRepository: {
+        verifyCommentExists: jest.fn(), getCommentsByThreadId: jest.fn().mockResolvedValue([]),
+        addComment: jest.fn(), deleteComment: jest.fn(), verifyCommentOwner: jest.fn(),
+        ...commentOverrides,
+      },
+      replyRepository: {
+        addReply: jest.fn(), deleteReply: jest.fn(),
+        verifyReplyExists: jest.fn(), verifyReplyOwner: jest.fn(), getRepliesByCommentId: jest.fn().mockResolvedValue([]),
+        ...replyOverrides,
+      },
       likeRepository: { getLikeCountByCommentId: jest.fn().mockResolvedValue(0) },
     });
-
-  const getAccessToken = () =>
-    Jwt.token.generate({ id: 'user-123', username: 'darren' }, process.env.ACCESS_TOKEN_KEY);
-
-  beforeEach(() => jest.clearAllMocks());
+  };
 
   describe('POST /threads/:threadId/comments/:commentId/replies', () => {
     it('should return 201 and added reply', async () => {
-      mockThreadRepository.verifyThreadExists.mockResolvedValue(undefined);
-      mockCommentRepository.verifyCommentExists.mockResolvedValue(undefined);
-      mockReplyRepository.addReply.mockResolvedValue({
-        id: 'reply-123',
-        content: 'A reply',
-        owner: 'user-123',
-      });
+      const app = makeApp(
+        { verifyThreadExists: jest.fn().mockResolvedValue(undefined) },
+        { verifyCommentExists: jest.fn().mockResolvedValue(undefined) },
+        { addReply: jest.fn().mockResolvedValue({ id: 'reply-123', content: 'A reply', owner: 'user-123' }) }
+      );
+      const res = await request(app)
+        .post('/threads/thread-123/comments/comment-123/replies')
+        .set('Authorization', `Bearer ${getAccessToken()}`)
+        .send({ content: 'A reply' });
+      expect(res.statusCode).toBe(201);
+      expect(res.body.data.addedReply.id).toBe('reply-123');
+    });
 
-      const server = await makeServer();
-      const response = await server.inject({
-        method: 'POST',
-        url: '/threads/thread-123/comments/comment-123/replies',
-        payload: { content: 'A reply' },
-        headers: { Authorization: `Bearer ${getAccessToken()}` },
-      });
-
-      expect(response.statusCode).toBe(201);
-      const payload = JSON.parse(response.payload);
-      expect(payload.status).toBe('success');
-      expect(payload.data.addedReply.id).toBe('reply-123');
+    it('should return 500 when postReply throws error', async () => {
+      const app = makeApp({ verifyThreadExists: jest.fn().mockRejectedValue(new Error('server error')) });
+      const res = await request(app)
+        .post('/threads/thread-123/comments/comment-123/replies')
+        .set('Authorization', `Bearer ${getAccessToken()}`)
+        .send({ content: 'A reply' });
+      expect(res.statusCode).toBe(500);
     });
   });
 
   describe('DELETE /threads/:threadId/comments/:commentId/replies/:replyId', () => {
     it('should return 200 on delete', async () => {
-      mockThreadRepository.verifyThreadExists.mockResolvedValue(undefined);
-      mockCommentRepository.verifyCommentExists.mockResolvedValue(undefined);
-      mockReplyRepository.verifyReplyExists.mockResolvedValue(undefined);
-      mockReplyRepository.verifyReplyOwner.mockResolvedValue(undefined);
-      mockReplyRepository.deleteReply.mockResolvedValue(undefined);
+      const app = makeApp(
+        { verifyThreadExists: jest.fn().mockResolvedValue(undefined) },
+        { verifyCommentExists: jest.fn().mockResolvedValue(undefined) },
+        {
+          verifyReplyExists: jest.fn().mockResolvedValue(undefined),
+          verifyReplyOwner: jest.fn().mockResolvedValue(undefined),
+          deleteReply: jest.fn().mockResolvedValue(undefined),
+        }
+      );
+      const res = await request(app)
+        .delete('/threads/thread-123/comments/comment-123/replies/reply-123')
+        .set('Authorization', `Bearer ${getAccessToken()}`);
+      expect(res.statusCode).toBe(200);
+    });
 
-      const server = await makeServer();
-      const response = await server.inject({
-        method: 'DELETE',
-        url: '/threads/thread-123/comments/comment-123/replies/reply-123',
-        headers: { Authorization: `Bearer ${getAccessToken()}` },
-      });
-
-      expect(response.statusCode).toBe(200);
-      const payload = JSON.parse(response.payload);
-      expect(payload.status).toBe('success');
+    it('should return 403 when deleteReply throws AuthorizationError', async () => {
+      const app = makeApp(
+        { verifyThreadExists: jest.fn().mockResolvedValue(undefined) },
+        { verifyCommentExists: jest.fn().mockResolvedValue(undefined) },
+        {
+          verifyReplyExists: jest.fn().mockResolvedValue(undefined),
+          verifyReplyOwner: jest.fn().mockRejectedValue(new AuthorizationError('forbidden')),
+        }
+      );
+      const res = await request(app)
+        .delete('/threads/thread-123/comments/comment-123/replies/reply-123')
+        .set('Authorization', `Bearer ${getAccessToken()}`);
+      expect(res.statusCode).toBe(403);
     });
   });
 });

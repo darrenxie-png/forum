@@ -10,10 +10,10 @@ class CreateThread {
 
   _verifyPayload({ title, body, owner }) {
     if (!title || !body || !owner) {
-      throw new InvariantError('Tidak dapat membuat thread baru karena properti yang dibutuhkan tidak ada');
+      throw new InvariantError('tidak dapat membuat thread baru karena properti yang dibutuhkan tidak ada');
     }
     if (typeof title !== 'string' || typeof body !== 'string' || typeof owner !== 'string') {
-      throw new InvariantError('Tidak dapat membuat thread baru karena tipe data tidak sesuai');
+      throw new InvariantError('tidak dapat membuat thread baru karena tipe data tidak sesuai');
     }
   }
 }

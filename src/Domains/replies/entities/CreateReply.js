@@ -11,10 +11,10 @@ class CreateReply {
 
   _verifyPayload({ content, commentId, threadId, owner }) {
     if (!content || !commentId || !threadId || !owner) {
-      throw new InvariantError('Tidak dapat membuat reply baru karena properti yang dibutuhkan tidak ada');
+      throw new InvariantError('tidak dapat membuat reply baru karena properti yang dibutuhkan tidak ada');
     }
     if (typeof content !== 'string' || typeof commentId !== 'string' || typeof threadId !== 'string' || typeof owner !== 'string') {
-      throw new InvariantError('Tidak dapat membuat reply baru karena tipe data tidak sesuai');
+      throw new InvariantError('tidak dapat membuat reply baru karena tipe data tidak sesuai');
     }
   }
 }
